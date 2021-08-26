@@ -20,10 +20,14 @@ def main():
     x = (ws / 2) - (w / 2)
     y = (hs / 2) - (h / 2)
     main_window.geometry('%dx%d+%d+%d' % (w, h, x, y))
+    main_window.iconbitmap("images/myIcon.ico")
 
     color_picker_button_image = tk.PhotoImage(file="images/color_picker_button.png")
     switch_off_img = tk.PhotoImage(file="images/switch-off.png")
     switch_on_img = tk.PhotoImage(file="images/switch-on.png")
+    yellow_light_button_image = tk.PhotoImage(file="images/yellow_button.png")
+    normal_light_button_image = tk.PhotoImage(file="images/normal_button.png")
+    white_light_button_image = tk.PhotoImage(file="images/white_button.png")
 
     def switch_btn_pressed():
         bulb.toggle()
@@ -38,7 +42,6 @@ def main():
         else:
             return switch_on_img
 
-        # icon from https: // www.flaticon.com / authors / pixel - perfect
 
     button = tk.Button(main_window, image=init_btn_pressed(), command=switch_btn_pressed, height=95, borderwidth=0)
     button.place(x=370, y=50)
@@ -49,10 +52,10 @@ def main():
 
     brightness_scale = tk.Scale(main_window, orient="horizontal", from_=0, to=100, length=500, width=30, showvalue=0,
                                 command=scale_to_bulb,
-                                resolution=10, bg="#8BFFC7", borderwidth=0, activebackground="#8BFFC7", sliderrelief="flat", troughcolor="#C4C4C4")
+                                resolution=10, bg="#8BFFC7", borderwidth=0, activebackground="#8BFFC7",
+                                sliderrelief="flat", troughcolor="#C4C4C4")
     brightness_scale.place(x=50, y=250)
     brightness_scale.set(bulb.get_properties()["bright"])
-
 
     OPTIONS = [
         "Default",
@@ -81,7 +84,6 @@ def main():
 
     variable = tk.StringVar(main_window)
     variable.set(OPTIONS[0])
-
 
     def ok(event):
         if combobox_dropdown.get() == "Alarm":
@@ -142,19 +144,28 @@ def main():
     combobox_dropdown.option_add("*TCombobox*Listbox.selectBackground", "#8BFFC7")
     combobox_dropdown.option_add("*TCombobox*Listbox.selectForeground", "black")
 
-
     def color():
         color = colorchooser.askcolor()[0]
         print([0])
         bulb.set_rgb(color[0], color[1], color[2])
 
-
     color_picker_button = tk.Button(main_window, image=color_picker_button_image, borderwidth=0, command=color)
-
-
 
     color_picker_button.place(x=150, y=50)
 
+    yellow_light_button = tk.Button(main_window, image=yellow_light_button_image,
+                                    command=lambda: bulb.set_color_temp(3123), height=95, borderwidth=0)
+    yellow_light_button.place(x=50, y=150)
+
+    normal_light_button = tk.Button(main_window, image=normal_light_button_image,
+                                    command=lambda: bulb.set_color_temp(4003), height=95, borderwidth=0)
+    normal_light_button.place(x=220, y=150)
+
+    blue_light_button = tk.Button(main_window, image=white_light_button_image,
+                                  command=lambda: bulb.set_color_temp(5276), height=95, borderwidth=0)
+    blue_light_button.place(x=400, y=150)
+
     main_window.mainloop()
+
 
 main()
