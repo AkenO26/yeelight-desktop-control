@@ -4,16 +4,24 @@ from tkinter import ttk
 import yeelight as yl
 from yeelight.flows import *
 
-BULB_IP = "192.168.0.21"
-bulb = yl.Bulb(BULB_IP)
-
 
 def main():
+    file = open("bulbIP.txt", "r")
+    text = file.read()
+
+    while validate_ip(text) != True:
+        get_bulbIP()
+        file.close()
+        file = open("bulbIP.txt", "r")
+        text = file.read()
+    file.close()
+    bulb = yl.Bulb(text)
+
     main_window = tk.Tk()
     main_window.title("Yeelight quick control panel")
     w = 600
     h = 300
-    main_window.minsize(w, h);
+    main_window.minsize(w, h)
     main_window.maxsize(w, h)
     ws = main_window.winfo_screenwidth()
     hs = main_window.winfo_screenheight()
@@ -41,7 +49,6 @@ def main():
             return switch_off_img
         else:
             return switch_on_img
-
 
     button = tk.Button(main_window, image=init_btn_pressed(), command=switch_btn_pressed, height=95, borderwidth=0)
     button.place(x=370, y=50)
@@ -166,6 +173,56 @@ def main():
     blue_light_button.place(x=400, y=150)
 
     main_window.mainloop()
+
+
+def get_bulbIP():
+    splash_window = tk.Tk()
+    splash_window.title("Bulb setup")
+    w = 350
+    h = 150
+    splash_window.minsize(w, h)
+    splash_window.maxsize(w, h)
+    ws = splash_window.winfo_screenwidth()
+    hs = splash_window.winfo_screenheight()
+    x = (ws / 2) - (w / 2)
+    y = (hs / 2) - (h / 2)
+    splash_window.geometry('%dx%d+%d+%d' % (w, h, x, y))
+    splash_window.iconbitmap("images/myIcon.ico")
+
+    set_button_image = tk.PhotoImage(file="images/set.png")
+
+    label = tk.Label(splash_window, text="Please set the bulb IP : ")
+    label.pack(padx=5, pady=5, side="left")
+
+    IP = tk.StringVar()
+    entry = tk.Entry(splash_window, width=20, textvariable=IP)
+    entry.pack(padx=5, pady=5, side="left")
+    entry.focus_force()
+
+    def save_bulb():
+        bulb = entry.get()
+        with open("bulbIP.txt", "w") as reader:
+            reader.truncate(0)
+            reader.write(bulb)
+        splash_window.destroy()
+
+    set_btn = tk.Button(splash_window, image=set_button_image, borderwidth=0, command=save_bulb)
+    set_btn.pack(padx=5, pady=5, side="left")
+
+    splash_window.mainloop()
+
+
+def validate_ip(s):
+    a = s.split('.')
+    if len(a) != 4:
+        return False
+    for x in a:
+        if not x.isdigit():
+            return False
+        i = int(x)
+        if i < 0 or i > 255:
+            return False
+    return True
 
 
 main()
