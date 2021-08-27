@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import colorchooser
 from tkinter import ttk
+from tkinter import messagebox
 import yeelight as yl
 import os
 from yeelight.flows import *
@@ -175,13 +176,24 @@ def main():
     blue_light_button.place(x=400, y=150)
 
     edit_button = tk.Button(main_window, image=edit_button_image,
-                                  command=openInstrucktion, height=30, borderwidth=0)
+                                  command=combine_funcs(openInstrucktion, quit), height=30, borderwidth=0)
     edit_button.place(x=10, y=10)
 
 
 
 
     main_window.mainloop()
+
+
+def combine_funcs(*funcs):
+    def combined_func(*args, **kwargs):
+        for f in funcs:
+            f(*args, **kwargs)
+    return combined_func
+
+def quit():
+    tk.messagebox.showinfo(title="Restart", message="Relaunch the app")
+    exit()
 
 def openInstrucktion():
     os.system("bulbIP.txt")
