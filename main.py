@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import colorchooser
 from tkinter import ttk
 import yeelight as yl
+import os
 from yeelight.flows import *
 
 
@@ -36,6 +37,7 @@ def main():
     yellow_light_button_image = tk.PhotoImage(file="images/yellow_button.png")
     normal_light_button_image = tk.PhotoImage(file="images/normal_button.png")
     white_light_button_image = tk.PhotoImage(file="images/white_button.png")
+    edit_button_image = tk.PhotoImage(file="images/edit.png")
 
     def switch_btn_pressed():
         bulb.toggle()
@@ -172,7 +174,17 @@ def main():
                                   command=lambda: bulb.set_color_temp(5276), height=95, borderwidth=0)
     blue_light_button.place(x=400, y=150)
 
+    edit_button = tk.Button(main_window, image=edit_button_image,
+                                  command=openInstrucktion, height=30, borderwidth=0)
+    edit_button.place(x=10, y=10)
+
+
+
+
     main_window.mainloop()
+
+def openInstrucktion():
+    os.system("bulbIP.txt")
 
 
 def get_bulbIP():
