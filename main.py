@@ -1,17 +1,22 @@
+#Importing modules
+
 import tkinter as tk
 from tkinter import colorchooser
 from tkinter import ttk
 from tkinter import messagebox
-import yeelight as yl
+import yeelight as yl # Thanks to https://gitlab.com/stavros/python-yeelight
 import os
 from yeelight.flows import *
 
 
 def main():
+    # First we open the file containing a placeholder
     file = open("bulbIP.txt", "r")
     text = file.read()
 
-    while validate_ip(text) != True:
+    # Asks user to input a valid IP address
+    # In the while loop we have to close and then open the file to refresh it's content
+    while not validate_ip(text):
         get_bulbIP()
         file.close()
         file = open("bulbIP.txt", "r")
@@ -19,6 +24,7 @@ def main():
     file.close()
     bulb = yl.Bulb(text)
 
+    # This is our main window
     main_window = tk.Tk()
     main_window.title("Yeelight quick control panel")
     w = 600
@@ -30,8 +36,11 @@ def main():
     x = (ws / 2) - (w / 2)
     y = (hs / 2) - (h / 2)
     main_window.geometry('%dx%d+%d+%d' % (w, h, x, y))
+    # This bloc is to get the window to pop in the middle of the screen
+
     main_window.iconbitmap("images/myIcon.ico")
 
+    # These are the images in use in main()
     color_picker_button_image = tk.PhotoImage(file="images/color_picker_button.png")
     switch_off_img = tk.PhotoImage(file="images/switch-off.png")
     switch_on_img = tk.PhotoImage(file="images/switch-on.png")
@@ -53,6 +62,8 @@ def main():
         else:
             return switch_on_img
 
+    # Toggle button calls a function to check whether the light is on or off. Thanks to this we have a
+    # dynamic button
     button = tk.Button(main_window, image=init_btn_pressed(), command=switch_btn_pressed, height=95, borderwidth=0)
     button.place(x=370, y=50)
 
@@ -60,13 +71,15 @@ def main():
         bulb.set_brightness(int(val))
         print(bulb.get_properties()["bright"])
 
+    # This is the slider to set the brightness, it only works every 10 ticks because of API limitation
     brightness_scale = tk.Scale(main_window, orient="horizontal", from_=0, to=100, length=500, width=30, showvalue=0,
                                 command=scale_to_bulb,
                                 resolution=10, bg="#8BFFC7", borderwidth=0, activebackground="#8BFFC7",
                                 sliderrelief="flat", troughcolor="#C4C4C4")
     brightness_scale.place(x=50, y=250)
-    brightness_scale.set(bulb.get_properties()["bright"])
+    brightness_scale.set(bulb.get_properties()["bright"]) # Check the state of slider
 
+    # Flow names (presets)
     OPTIONS = [
         "Default",
         "Alarm",
@@ -95,6 +108,7 @@ def main():
     variable = tk.StringVar(main_window)
     variable.set(OPTIONS[0])
 
+    # Toggle between options in the combobox
     def ok(event):
         if combobox_dropdown.get() == "Alarm":
             bulb.start_flow(yl.flows.alarm(duration=250))
@@ -141,28 +155,32 @@ def main():
         elif combobox_dropdown.get() == "Default":
             bulb.stop_flow()
 
+    # Hack to avoid blue selection on dropdown menu
     def defocus(event):
         event.widget.master.focus_set()
 
     combobox_dropdown = ttk.Combobox(main_window, state="readonly", value=OPTIONS, justify="center", width=15)
     combobox_dropdown.current(0)
 
+    # To get live selection, it avoid the usage of a button
     combobox_dropdown.bind("<<ComboboxSelected>>", ok)
     combobox_dropdown.bind("<FocusIn>", defocus)
     combobox_dropdown.place(x=20, y=90)
 
+    # Color
     combobox_dropdown.option_add("*TCombobox*Listbox.selectBackground", "#8BFFC7")
     combobox_dropdown.option_add("*TCombobox*Listbox.selectForeground", "black")
 
     def color():
         color = colorchooser.askcolor()[0]
-        print([0])
         bulb.set_rgb(color[0], color[1], color[2])
 
+    # Color picker is bundled in the tkinter module
     color_picker_button = tk.Button(main_window, image=color_picker_button_image, borderwidth=0, command=color)
 
     color_picker_button.place(x=150, y=50)
 
+    # Bellow we have 3 buttons for white light these are workarounds to reset white light after color light
     yellow_light_button = tk.Button(main_window, image=yellow_light_button_image,
                                     command=lambda: bulb.set_color_temp(3123), height=95, borderwidth=0)
     yellow_light_button.place(x=50, y=150)
@@ -176,30 +194,34 @@ def main():
     blue_light_button.place(x=400, y=150)
 
     edit_button = tk.Button(main_window, image=edit_button_image,
-                                  command=combine_funcs(openInstrucktion, quit), height=30, borderwidth=0)
+                            command=combine_funcs(openInstruction, quit), height=30, borderwidth=0)
     edit_button.place(x=10, y=10)
-
-
-
 
     main_window.mainloop()
 
 
+# Combines n fonctions
 def combine_funcs(*funcs):
     def combined_func(*args, **kwargs):
         for f in funcs:
             f(*args, **kwargs)
+
     return combined_func
 
+# quit program after printing a message
 def quit():
     tk.messagebox.showinfo(title="Restart", message="Relaunch the app")
     exit()
 
-def openInstrucktion():
+
+# open bulbIP.txt in default texteditor
+def openInstruction():
     os.system("bulbIP.txt")
 
 
 def get_bulbIP():
+
+    # Creating a splashscreen before the program launches
     splash_window = tk.Tk()
     splash_window.title("Bulb setup")
     w = 350
@@ -226,16 +248,18 @@ def get_bulbIP():
     def save_bulb():
         bulb = entry.get()
         with open("bulbIP.txt", "w") as reader:
-            reader.truncate(0)
+            reader.truncate(0) # Here it's just to keep the IP part and no whitespaces-
             reader.write(bulb)
-        splash_window.destroy()
+        splash_window.destroy() # After the button is pressed and that a valid IP is input it closes the window
 
+    # This button calls the function declared higher
     set_btn = tk.Button(splash_window, image=set_button_image, borderwidth=0, command=save_bulb)
     set_btn.pack(padx=5, pady=5, side="left")
 
     splash_window.mainloop()
 
 
+# Check if the IP is valid
 def validate_ip(s):
     a = s.split('.')
     if len(a) != 4:
